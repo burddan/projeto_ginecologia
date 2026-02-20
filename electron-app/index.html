@@ -47,8 +47,8 @@
           const blob = new Blob(chunksGravados, { type: "video/webm" });
           const buffer = await blob.arrayBuffer();
 
-          const filename = `video-${Date.now()}.webm`;
-          const path = await window.electronAPI.saveFile({ buffer, filename });
+          const nome_arquivo = `video-${Date.now()}.webm`;
+          const path = await window.electronAPI.saveFile({ buffer, nome_arquivo });
 
           console.log("Vídeo salvo em:", path);
         };
@@ -74,9 +74,9 @@
 
         canvas.toBlob(async blob => {
           const buffer = await blob.arrayBuffer();
-          const filename = `photo-${Date.now()}.png`;
+          const nome_arquivo = `photo-${Date.now()}.png`;
 
-          const path = await window.electronAPI.saveFile({ buffer, filename });
+          const path = await window.electronAPI.saveFile({ buffer, nome_arquivo });
           console.log("Foto salva em:", path);
         });
       }

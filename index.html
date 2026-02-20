@@ -1,93 +1,96 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <title>Câmera Electron</title>
-</head>
-<body>
-  <h1>Câmera do PC</h1>
-  <video id="video" autoplay playsinline></video>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Câmera Projeto Ginecologia</title>
+  </head>
+  <body>
+    <h1>Câmera de acesso<h1>
+    <video id="video" autoplay playsinline></video>
 
-  <script>
-    const video = document.getElementById("video");
+    <script>
+      const video = document.getElementById("video");
 
-    let mediaRecorder;
-    let recordedChunks = [];
-    let stream;
-    let recording = false;
+      let gravadorMedia;
+      let chunksGravados = [];
+      let camera;
+      let gravacaoStatus = false;
 
-    async function initCamera() {
-      stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      video.srcObject = stream;
-    }
-
-    async function chooseSaveFolder() {
-      const folder = await window.electronAPI.chooseFolder();
-      if (folder) {
-        console.log("Pasta selecionada:", folder);
-      } else {
-        console.log("Nenhuma pasta selecionada, usando padrão");
+      // aqui inicia a camera
+      // o problema e que ela pega QUALQUER dispositivo que estiver de camera, queremos apenas a camera que sera utilizada no dispositivo
+      async function iniciarCamera() {
+        camera = await navigator.mediaDevices.getUserMedia({ video: true });
+        //define o objeto da camera
+        video.srcObject = camera;
       }
-    }
 
-    function startRecording() {
-      recordedChunks = [];
-      mediaRecorder = new MediaRecorder(stream, {
-        mimeType: "video/webm; codecs=vp8"
+      async function escolherPasta() {
+        const folder = await window.electronAPI.chooseFolder();
+        if (folder) {
+          console.log("Pasta selecionada:", folder);
+        } else {
+          console.log("Nenhuma pasta selecionada, usando padrão");
+        }
+      }
+
+      function iniciarGravacao() {
+        chunksGravados = [];
+        gravadorMedia = new MediaRecorder(camera, {
+          mimeType: "video/webm; codecs=vp8"
+        });
+
+        gravadorMedia.ondataavailable = e => {
+          if (e.data.size > 0) chunksGravados.push(e.data);
+        };
+
+        gravadorMedia.onstop = async () => {
+          const blob = new Blob(chunksGravados, { type: "video/webm" });
+          const buffer = await blob.arrayBuffer();
+
+          const filename = `video-${Date.now()}.webm`;
+          const path = await window.electronAPI.saveFile({ buffer, filename });
+
+          console.log("Vídeo salvo em:", path);
+        };
+
+        gravadorMedia.start();
+        gravacaoStatus = true;
+        console.log("Gravação iniciada");
+      }
+
+      function pararGravacao() {
+        gravadorMedia.stop();
+        gravacaoStatus = false;
+        console.log("Gravação parada");
+      }
+
+      function takePhoto() {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0);
+
+        canvas.toBlob(async blob => {
+          const buffer = await blob.arrayBuffer();
+          const filename = `photo-${Date.now()}.png`;
+
+          const path = await window.electronAPI.saveFile({ buffer, filename });
+          console.log("Foto salva em:", path);
+        });
+      }
+
+      window.electronAPI.onRecordToggle(() => {
+        gravacaoStatus ? pararGravacao() : iniciarGravacao();
       });
 
-      mediaRecorder.ondataavailable = e => {
-        if (e.data.size > 0) recordedChunks.push(e.data);
-      };
-
-      mediaRecorder.onstop = async () => {
-        const blob = new Blob(recordedChunks, { type: "video/webm" });
-        const buffer = await blob.arrayBuffer();
-
-        const filename = `video-${Date.now()}.webm`;
-        const path = await window.electronAPI.saveFile({ buffer, filename });
-
-        console.log("Vídeo salvo em:", path);
-      };
-
-      mediaRecorder.start();
-      recording = true;
-      console.log("Gravação iniciada");
-    }
-
-    function stopRecording() {
-      mediaRecorder.stop();
-      recording = false;
-      console.log("Gravação parada");
-    }
-
-    function takePhoto() {
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(video, 0, 0);
-
-      canvas.toBlob(async blob => {
-        const buffer = await blob.arrayBuffer();
-        const filename = `photo-${Date.now()}.png`;
-
-        const path = await window.electronAPI.saveFile({ buffer, filename });
-        console.log("Foto salva em:", path);
+      window.electronAPI.onPhotoTake(() => {
+        takePhoto();
       });
-    }
 
-    window.electronAPI.onRecordToggle(() => {
-      recording ? stopRecording() : startRecording();
-    });
-
-    window.electronAPI.onPhotoTake(() => {
-      takePhoto();
-    });
-
-    initCamera();
-    chooseSaveFolder(); // 👈 aqui
-  </script>
-</body>
+      iniciarCamera();
+      escolherPasta(); // 👈 aqui
+    </script>
+  </body>
 </html>

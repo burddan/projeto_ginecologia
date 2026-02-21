@@ -9,6 +9,8 @@ function createWindow() {
   win = new BrowserWindow({
     width: 800,
     height: 600,
+    // importante, a barra do chromium fica ali com o alt habilidado, mudar isso dps
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true

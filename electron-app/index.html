@@ -25,7 +25,7 @@
       }
 
       async function escolherPasta() {
-        const folder = await window.electronAPI.chooseFolder();
+        const folder = await window.electronAPI.escolherPasta();
         if (folder) {
           console.log("Pasta selecionada:", folder);
         } else {
@@ -47,10 +47,10 @@
           const blob = new Blob(chunksGravados, { type: "video/webm" });
           const buffer = await blob.arrayBuffer();
 
-          const nome_arquivo = `video-${Date.now()}.webm`;
-          const path = await window.electronAPI.saveFile({ buffer, nome_arquivo });
+          const filename = `Video-${Date.now()}.webm`;
+          const path = await window.electronAPI.salvarArquivo({ buffer, filename });
 
-          console.log("Vídeo salvo em:", path);
+          console.log("Vídeo salvo em: ", path);
         };
 
         gravadorMedia.start();
@@ -64,7 +64,7 @@
         console.log("Gravação parada");
       }
 
-      function takePhoto() {
+      function tirarFoto() {
         const canvas = document.createElement("canvas");
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -74,19 +74,25 @@
 
         canvas.toBlob(async blob => {
           const buffer = await blob.arrayBuffer();
-          const nome_arquivo = `photo-${Date.now()}.png`;
+          const filename = `Foto-${Date.now()}.png`;
 
-          const path = await window.electronAPI.saveFile({ buffer, nome_arquivo });
+          const path = await window.electronAPI.salvarArquivo({ buffer, filename });
           console.log("Foto salva em:", path);
         });
       }
 
-      window.electronAPI.onRecordToggle(() => {
-        gravacaoStatus ? pararGravacao() : iniciarGravacao();
+
+      // responsavel por sincronizar o preload.js
+      window.electronAPI.iniciarPararGravacao(() => {
+        if(gravacaoStatus){
+          pararGravacao();
+        } else {
+          iniciarGravacao();
+        }
       });
 
-      window.electronAPI.onPhotoTake(() => {
-        takePhoto();
+      window.electronAPI.iniciarFoto(() => {
+        tirarFoto();
       });
 
       iniciarCamera();

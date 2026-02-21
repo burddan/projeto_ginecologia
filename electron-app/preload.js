@@ -1,9 +1,9 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electronAPI", {
-  onRecordToggle: (callback) => ipcRenderer.on("record:toggle", callback),
-  onPhotoTake: (callback) => ipcRenderer.on("photo:take", callback),
+  iniciarPararGravacao: (callback) => ipcRenderer.on("record:toggle", callback),
+  iniciarFoto: (callback) => ipcRenderer.on("photo:take", callback),
 
-  chooseFolder: () => ipcRenderer.invoke("choose-folder"),
-  saveFile: (data) => ipcRenderer.invoke("save-file", data)
+  escolherPasta: () => ipcRenderer.invoke("choose-folder"),
+  salvarArquivo: (data) => ipcRenderer.invoke("save-file", data)
 });

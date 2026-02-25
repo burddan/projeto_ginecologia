@@ -5,11 +5,15 @@
     <title>Câmera Projeto Ginecologia</title>
   </head>
   <body>
-    <h1>Câmera de acesso<h1>
+    <h1>Câmera de acesso</h1>
+    <h1 id=statusGravacao style="display: none;color: red;">Gravando...</h1>
+    <h1 id=statusFoto style="display: none;color: black;"></h1>
     <video id="video" autoplay playsinline></video>
 
     <script>
       const video = document.getElementById("video");
+      const statusGravacao = document.getElementById("statusGravacao");
+      const statusFoto = document.getElementById("statusFoto");
 
       let gravadorMedia;
       let chunksGravados = [];
@@ -34,13 +38,16 @@
       }
 
       function iniciarGravacao() {
+        statusGravacao.style.display = "block";
         chunksGravados = [];
         gravadorMedia = new MediaRecorder(camera, {
           mimeType: "video/webm; codecs=vp8"
         });
 
         gravadorMedia.ondataavailable = e => {
-          if (e.data.size > 0) chunksGravados.push(e.data);
+          if (e.data.size > 0) {
+            chunksGravados.push(e.data);
+          }
         };
 
         gravadorMedia.onstop = async () => {
@@ -50,18 +57,16 @@
           const filename = `Video-${Date.now()}.webm`;
           const path = await window.electronAPI.salvarArquivo({ buffer, filename });
 
-          console.log("Vídeo salvo em: ", path);
         };
 
         gravadorMedia.start();
         gravacaoStatus = true;
-        console.log("Gravação iniciada");
       }
 
       function pararGravacao() {
+        statusGravacao.style.display = "none";
         gravadorMedia.stop();
         gravacaoStatus = false;
-        console.log("Gravação parada");
       }
 
       function tirarFoto() {
@@ -77,8 +82,13 @@
           const filename = `Foto-${Date.now()}.png`;
 
           const path = await window.electronAPI.salvarArquivo({ buffer, filename });
-          console.log("Foto salva em:", path);
         });
+        // botar o path depois
+        statusFoto.innerText = "Foto tirada!";
+        statusFoto.style.display = "block";
+        setTimeout(() => {
+          statusFoto.style.display = "none";
+        }, 3000);
       }
 
 
@@ -96,7 +106,7 @@
       });
 
       iniciarCamera();
-      escolherPasta(); // 👈 aqui
+      escolherPasta(); 
     </script>
   </body>
 </html>

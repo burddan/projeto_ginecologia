@@ -7,8 +7,8 @@ let saveDir = null;
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1920,
+    height: 1080,
     // importante, a barra do chromium fica ali com o alt habilidado, mudar isso dps
     autoHideMenuBar: true,
     webPreferences: {
@@ -20,14 +20,15 @@ function createWindow() {
   win.loadFile("index.html");
 }
 
+//main
 app.whenReady().then(() => {
   createWindow();
 
-  globalShortcut.register("Alt+F10", () => {
+  globalShortcut.register("Alt+F3", () => {
     win.webContents.send("record:toggle");
   });
 
-  globalShortcut.register("Alt+F9", () => {
+  globalShortcut.register("Alt+F4", () => {
     win.webContents.send("photo:take");
   });
 });

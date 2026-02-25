@@ -9,13 +9,12 @@ function createWindow() {
   win = new BrowserWindow({
     width: 1920,
     height: 1080,
-    // importante, a barra do chromium fica ali com o alt habilidado, mudar isso dps
-    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true
     }
   });
+  win.removeMenu(); 
 
   win.loadFile("index.html");
 }
@@ -28,7 +27,7 @@ app.whenReady().then(() => {
     win.webContents.send("record:toggle");
   });
 
-  globalShortcut.register("Alt+F4", () => {
+  globalShortcut.register("Alt+F2", () => {
     win.webContents.send("photo:take");
   });
 });
